@@ -227,36 +227,17 @@ func acceptsOffer(spec, offer string) bool {
 	return false
 }
 
-// acceptsOfferType This function determines if an offer type matches a given specification.
-// It checks if the specification is equal to */* (i.e., all types are accepted).
-// It gets the MIME type of the offer (either from the offer itself or by its file extension).
-// It checks if the offer MIME type matches the specification MIME type or if the specification is of the form <MIME_type>/* and the offer MIME type has the same MIME type.
-// Returns true if the offer type matches the specification, false otherwise.
-func acceptsOfferType(spec, offerType string) bool {
-	// Accept: */*
-	if spec == "*/*" {
-		return true
-	}
-
+// getMIMEType This function gets the MIME type of a given specification.
+// If the specification contains a '/', it is assumed to be a MIME type.
+// Otherwise, it is assumed to be a file extension and the MIME type is retrieved from the extension.
+func getMIMEType(spec string) string {
 	var mimetype string
-	if strings.IndexByte(offerType, '/') != -1 {
-		mimetype = offerType // MIME type
+	if strings.IndexByte(spec, '/') != -1 {
+		mimetype = spec // MIME type
 	} else {
-		mimetype = utils.GetMIME(offerType) // extension
+		mimetype = utils.GetMIME(spec) // extension
 	}
-
-	if spec == mimetype {
-		// Accept: <MIME_type>/<MIME_subtype>
-		return true
-	}
-
-	s := strings.IndexByte(mimetype, '/')
-	// Accept: <MIME_type>/*
-	if strings.HasPrefix(spec, mimetype[:s]) && (spec[s:] == "/*" || mimetype[s:] == "/*") {
-		return true
-	}
-
-	return false
+	return mimetype
 }
 
 // getOffer return valid offer for header negotiation

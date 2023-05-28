@@ -24,6 +24,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/gofiber/fiber/v2/internal/negotiator"
 	"github.com/gofiber/fiber/v2/internal/schema"
 	"github.com/gofiber/fiber/v2/utils"
 
@@ -197,7 +198,25 @@ func (app *App) ReleaseCtx(c *Ctx) {
 
 // Accepts checks if the specified extensions or content types are acceptable.
 func (c *Ctx) Accepts(offers ...string) string {
-	return getOffer(c.Get(HeaderAccept), acceptsOfferType, offers...)
+	mimes := make([]string, len(offers))
+	for i, offer := range offers {
+		mimes[i] = getMIMEType(offer)
+	}
+
+	if len(mimes) > 0 {
+		accepts := negotiator.PreferredMediaTypes(c.Get(HeaderAccept), mimes...)
+		if len(accepts) > 0 {
+			for i, mimes := range mimes {
+				if mimes == accepts[0] {
+					return offers[i]
+				}
+			}
+		}
+	}
+
+	return ""
+
+	// return getOffer(c.Get(HeaderAccept), acceptsOfferType, offers...)
 }
 
 // AcceptsCharsets checks if the specified charset is acceptable.
