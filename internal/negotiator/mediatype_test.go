@@ -10,6 +10,9 @@ import (
 func Test_PreferredMediaTypes(t *testing.T) {
 	t.Parallel()
 
+	// check specificity
+	utils.AssertEqual(t, []string{"application/xml+atom", "application/xml"}, PreferredMediaTypes("application/xml+atom;q=1.0, application/xml;q=0.8, */*;q=0.1", "application/xml", "application/xml+atom"))
+
 	utils.AssertEqual(t, []string{"application/json"}, PreferredMediaTypes("", "application/json"))
 	utils.AssertEqual(t, []string{"application/json", "text/html"}, PreferredMediaTypes("text/html, application/json", "application/json", "text/html"))
 
@@ -27,7 +30,6 @@ func Test_PreferredMediaTypes(t *testing.T) {
 	utils.AssertEqual(t, []string{"application/json"}, PreferredMediaTypes("*/*", "application/json"))
 	utils.AssertEqual(t, []string{"text/plain"}, PreferredMediaTypes("*/*", "text/plain"))
 	utils.AssertEqual(t, []string{"application/xml"}, PreferredMediaTypes("text/html, */*", "application/xml"))
-
 }
 
 func Benchmark_PerferedMediaTypes(b *testing.B) {
