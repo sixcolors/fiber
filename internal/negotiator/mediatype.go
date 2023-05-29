@@ -52,7 +52,7 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 			}
 			return accepts[i].I < accepts[j].I
 		})
-	} else if n > 4 {
+	} else if n > 3 {
 		// insertion sort
 		for i := 1; i < len(accepts); i++ {
 			key := accepts[i]
@@ -92,9 +92,7 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 		// Sorted list of all types
 		types := make([]string, 0, len(accepts))
 		for _, mediaType := range accepts {
-			if isQuality(&mediaType) {
-				types = append(types, getFullType(&mediaType))
-			}
+			types = append(types, getFullType(&mediaType))
 		}
 		return types
 	}
@@ -109,21 +107,21 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 	// Sorted list of accepted types
 	types := make([]string, 0, len(priorities))
 	for _, priority := range priorities {
-		if isQuality(&priority) {
-			types = append(types, provided[priority.I])
-		}
+		types = append(types, provided[priority.I])
 	}
 	return types
 }
 
 // parseAccept parses the Accept header and returns a list of media types.
+// if quality values are missing, they are set to the default value of 1.
+// if media types have a quality value of 0, they are excluded.
 func parseAccept(accept string) []mediaType {
 	accepts := splitMediaTypes(accept)
 	parsedAccepts := make([]mediaType, 0, len(accepts))
 
 	for i := 0; i < len(accepts); i++ {
 		mediaType := parseMediaType(strings.TrimSpace(accepts[i]), i)
-		if mediaType != nil {
+		if mediaType != nil && mediaType.Q > 0 {
 			parsedAccepts = append(parsedAccepts, *mediaType)
 		}
 	}
@@ -225,11 +223,6 @@ func specify(typ string, spec *mediaType, index int) *mediaType {
 		I:       index,
 		S:       s,
 	}
-}
-
-// isQuality checks if a media type has any quality.
-func isQuality(mediaType *mediaType) bool {
-	return mediaType.Q > 0
 }
 
 // getFullType returns the full type string.

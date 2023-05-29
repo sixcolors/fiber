@@ -1,6 +1,7 @@
 package negotiator
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gofiber/fiber/v2/utils"
@@ -27,6 +28,24 @@ func Test_PreferredMediaTypes(t *testing.T) {
 	utils.AssertEqual(t, []string{"text/plain"}, PreferredMediaTypes("*/*", "text/plain"))
 	utils.AssertEqual(t, []string{"application/xml"}, PreferredMediaTypes("text/html, */*", "application/xml"))
 
+}
+
+func Benchmark_PerferedMediaTypes(b *testing.B) {
+	accepts := []string{
+		"text/html,application/xhtml+xml,application/xml;q=0.9",
+		"text/html, application/*;q=0.2, image/jpeg;q=0.8, text/plain, application/json;q=0, application/octet-stream;q=0.2, */*;q=0.1",
+		"text/html, application/*;q=0.2, image/jpeg;q=0.8, text/plain, application/json, text/html, text/xml, text/yaml, text/javascript, text/csv, text/css, text/rtf, text/markdown, application/octet-stream;q=0.2, */*;q=0.1",
+	}
+	for i := 0; i < len(accepts); i++ {
+		b.Run(fmt.Sprintf("run-%#v", accepts[i]), func(bb *testing.B) {
+			bb.ReportAllocs()
+			bb.ResetTimer()
+
+			for n := 0; n < bb.N; n++ {
+				PreferredMediaTypes(accepts[n%3])
+			}
+		})
+	}
 }
 
 func Test_parseMediaType(t *testing.T) {
@@ -113,26 +132,4 @@ func Test_specify(t *testing.T) {
 	utils.AssertEqual(t, "html", mediatype.Subtype)
 	utils.AssertEqual(t, 1.0, mediatype.Q)
 	utils.AssertEqual(t, 0, len(mediatype.Params))
-}
-
-func Test_isQuality(t *testing.T) {
-	t.Parallel()
-
-	accept := []mediaType{
-		{
-			Type:    "text",
-			Subtype: "html",
-			Q:       0.00,
-			Params:  map[string]string{},
-		},
-		{
-			Type:    "text",
-			Subtype: "*",
-			Q:       0.8,
-			Params:  map[string]string{},
-		},
-	}
-
-	utils.AssertEqual(t, false, isQuality(&accept[0]))
-	utils.AssertEqual(t, true, isQuality(&accept[1]))
 }
