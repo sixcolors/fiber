@@ -39,13 +39,13 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 	accepts := parseAccept(accept)
 
 	sort.SliceStable(accepts, func(i, j int) bool {
-		if accepts[i].Q == accepts[j].Q {
-			if accepts[i].S == accepts[j].S {
-				return accepts[i].I < accepts[j].I
-			}
+		if accepts[i].Q != accepts[j].Q {
+			return accepts[i].Q > accepts[j].Q
+		}
+		if accepts[i].S != accepts[j].S {
 			return accepts[i].S > accepts[j].S
 		}
-		return accepts[i].Q > accepts[j].Q
+		return accepts[i].I < accepts[j].I
 	})
 
 	if len(provided) == 0 {
@@ -61,9 +61,8 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 
 	priorities := []mediaType{}
 	for i, typ := range provided {
-		priority := getMediaTypePriority(typ, accepts, i)
-		if priority != nil {
-			priorities = append(priorities, *getMediaTypePriority(typ, accepts, i))
+		if priority := getMediaTypePriority(typ, accepts, i); priority != nil {
+			priorities = append(priorities, *priority)
 		}
 	}
 
@@ -198,25 +197,22 @@ func getFullType(mediaType *mediaType) string {
 	return mediaType.Type + "/" + mediaType.Subtype
 }
 
-// splitMediaTypes splits an Accept header into media types.
 func splitMediaTypes(accept string) []string {
-	accepts := strings.Split(accept, ",")
-	parts := make([]string, 0, len(accepts))
-	inQuotes := false
+	parts := make([]string, 0)
 
-	for _, part := range accepts {
-		part = strings.TrimSpace(part)
-		if inQuotes {
-			parts[len(parts)-1] += "," + part
-			if quoteCount(part)%2 == 0 {
-				inQuotes = false
-			}
-		} else {
-			parts = append(parts, part)
-			if quoteCount(part)%2 == 1 {
-				inQuotes = true
-			}
+	for len(accept) > 0 {
+		accept = strings.TrimSpace(accept)
+		idx := strings.IndexByte(accept, ',')
+		if idx == -1 {
+			parts = append(parts, accept)
+			break
 		}
+		inQuotes := quoteCount(accept[:idx])%2 == 1
+		if inQuotes {
+			continue
+		}
+		parts = append(parts, accept[:idx])
+		accept = accept[idx+1:]
 	}
 
 	return parts
