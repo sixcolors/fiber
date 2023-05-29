@@ -38,7 +38,7 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 	}
 	accepts := parseAccept(accept)
 
-	sort.SliceStable(accepts, func(i, j int) bool {
+	sort.Slice(accepts, func(i, j int) bool {
 		if accepts[i].Q != accepts[j].Q {
 			return accepts[i].Q > accepts[j].Q
 		}
