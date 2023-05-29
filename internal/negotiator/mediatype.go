@@ -197,6 +197,7 @@ func getFullType(mediaType *mediaType) string {
 	return mediaType.Type + "/" + mediaType.Subtype
 }
 
+// splitMediaTypes splits an Accept header into media types.
 func splitMediaTypes(accept string) []string {
 	parts := make([]string, 0)
 
