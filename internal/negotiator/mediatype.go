@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// mediaType represents a MIME media type.
 type mediaType struct {
 	Type    string
 	Subtype string
@@ -15,12 +16,26 @@ type mediaType struct {
 	S       int
 }
 
-// PreferredMediaTypes returns the preferred media types from an Accept header.
-// If no Accept header is given, the default is to return all provided media types ordered by client preference.
+// PreferredMediaTypes returns the preferred media type from a list of
+// available media types based on the value of the Accept header in the
+// request. If no match is found, the empty string is returned.
 //
-// The provided media types are ordered by priority from highest to lowest preference.
-// The first media type with a quality value > 0 will be the preferred media type.
-// If no media types in the provided list have a quality value > 0, then the preferred media type is the first media type in the provided list.
+// The provided media types should be ordered by preference, with the most
+// preferred media type being first and least preferred being last.
+//
+// If no media types are provided, the Accept header is parsed to determine
+// the acceptable media types.
+//
+// Quality values ("q") are considered when determining preference, with
+// higher values being preferred over lower values. If two or more media
+// types have the same quality value, then the order of the provided media
+// types is used to determine preference. If qaulity is 0 then the media
+// type is excluded.
+//
+// Specificity is considered when determining preference, with more specific
+// media types being preferred over less specific media types.
+//
+// See also: https://www.rfc-editor.org/rfc/rfc9110#section-12.5.1
 //
 // Example:
 //
