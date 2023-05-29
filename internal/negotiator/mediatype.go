@@ -38,15 +38,55 @@ func PreferredMediaTypes(accept string, provided ...string) []string {
 	}
 	accepts := parseAccept(accept)
 
-	sort.Slice(accepts, func(i, j int) bool {
-		if accepts[i].Q != accepts[j].Q {
-			return accepts[i].Q > accepts[j].Q
+	// Sorts the provided media types in order of client preference
+	// using a bubble sort algorithm
+	n := len(accepts)
+	if n > 12 {
+		// quick sort
+		sort.Slice(accepts, func(i, j int) bool {
+			if accepts[i].Q != accepts[j].Q {
+				return accepts[i].Q > accepts[j].Q
+			}
+			if accepts[i].S != accepts[j].S {
+				return accepts[i].S > accepts[j].S
+			}
+			return accepts[i].I < accepts[j].I
+		})
+	} else if n > 4 {
+		// insertion sort
+		for i := 1; i < len(accepts); i++ {
+			key := accepts[i]
+			j := i - 1
+
+			for j >= 0 && (key.Q > accepts[j].Q || (key.Q == accepts[j].Q && key.S > accepts[j].S)) {
+				accepts[j+1] = accepts[j]
+				j--
+			}
+
+			accepts[j+1] = key
+
+			if j+1 != i {
+				break // Early exit if no swaps were made in this iteration
+			}
 		}
-		if accepts[i].S != accepts[j].S {
-			return accepts[i].S > accepts[j].S
+	} else if n > 1 {
+		// bubble sort
+		for i := 0; i < len(accepts)-1; i++ {
+			for j := 0; j < len(accepts)-i-1; j++ {
+				if accepts[j].Q != accepts[j+1].Q {
+					if accepts[j].Q < accepts[j+1].Q {
+						accepts[j], accepts[j+1] = accepts[j+1], accepts[j]
+					}
+				} else if accepts[j].S != accepts[j+1].S {
+					if accepts[j].S < accepts[j+1].S {
+						accepts[j], accepts[j+1] = accepts[j+1], accepts[j]
+					}
+				} else if accepts[j].I > accepts[j+1].I {
+					accepts[j], accepts[j+1] = accepts[j+1], accepts[j]
+				}
+			}
 		}
-		return accepts[i].I < accepts[j].I
-	})
+	}
 
 	if len(provided) == 0 {
 		// Sorted list of all types
