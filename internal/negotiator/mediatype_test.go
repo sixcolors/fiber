@@ -34,7 +34,7 @@ func Benchmark_PerferedMediaTypes(b *testing.B) {
 	accepts := []string{
 		"text/html,application/xhtml+xml,application/xml;q=0.9",
 		"text/html, application/*;q=0.2, image/jpeg;q=0.8, text/plain, application/json;q=0, application/octet-stream;q=0.2, */*;q=0.1",
-		"text/html, application/*;q=0.2, image/jpeg;q=0.8, text/plain, application/json, text/html, text/xml, text/yaml, text/javascript, text/csv, text/css, text/rtf, text/markdown, application/octet-stream;q=0.2, */*;q=0.1",
+		"text/html, application/*;q=0.2, image/jpeg;q=0.8, text/plain, application/json, text/xhtml, text/xml, text/yaml, text/javascript, text/csv, text/css, text/rtf, text/markdown, application/octet-stream;q=0.2, */*;q=0.1",
 	}
 	for i := 0; i < len(accepts); i++ {
 		b.Run(fmt.Sprintf("run-%#v", accepts[i]), func(bb *testing.B) {
