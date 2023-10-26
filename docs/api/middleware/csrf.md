@@ -200,7 +200,7 @@ const (
 )
 ```
 
-### Custom Storage/Database
+## Custom Storage/Database
 
 You can use any storage from our [storage](https://github.com/gofiber/storage/) package.
 
